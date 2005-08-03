@@ -1,0 +1,11 @@
+name: WWW-Kontent
+version: 0.01
+abstract: Highly extensible Perl 6 CMS
+author: Brent Royal-Gordon <brent@brentdax.com>
+license: perl
+distribution_type: module
+requires:
+  - Perl6::Pugs: 6.2.9
+  - DBI: 0
+recommends:
+  - parrot: 0.2.3

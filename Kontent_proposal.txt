@@ -1,0 +1,134 @@
+TITLE
+
+WWW::Kontent - A Perl 6 Content Management System
+
+ABSTRACT
+
+I would like to build a CMS optimized for public-contribution sites, written 
+in Perl 6 (via Pugs for now).  This system would be modelled on MediaWiki and 
+the Everything Engine, but written far more cleanly than either of them.  It 
+would support multiple page types, keep page histories, and include a user 
+system.
+
+Although it would probably work best for sites that accept public 
+contributions, I believe it can be flexible enough to handle a typical 
+informational website, such as most of the perl.org sites.  I'm building this 
+with the knowledge of what I as a webmaster would like such a framework to do 
+so that I could rapidly design, build and manage a website.
+
+BENEFITS
+
+With this system, I intend to help drive Perl 6 development, demonstrate the 
+language's power and flexibility, and create an entry point for casual 
+programmers to start working in Perl 6.  The overall goal is to have a useful, 
+powerful web tool ready the moment Perl 6.0.0 is released.  When J. Random 
+Hacker installs Perl 6 and goes "now what?", I want to be able to say, "well, 
+you can get a website started real quick by pulling WWW::Kontent down from the 
+CPAN..."
+
+DETAILS
+
+Kontent's pages are held in an opaque data store of some sort.  Each page has 
+an ID number, a name, and several revisions, one of which is current.  Each 
+revision has several attributes, such as "title", "content", "log", and 
+"timestamp".  One important attribute is "class", which specifies what kind of 
+page it is.  In addition, each page has a parent page and potentially several 
+child pages.
+
+The system has five layers, which are listed below.  Readers familiar with the 
+Model-View-Controller design pattern may note a similar philosophy, although 
+the tasks are subdivided a little differently.
+
+  *	Supervisor: Parses URLs, interfaces with the web server, and generally 
+	coordinates the other layers.  There could be multiple drivers for e.g. 
+	mod_perl, ISAPI and CGI.
+
+  *	Store: Interfaces with some kind of backing store--a SQL database, DBM 
+	file, set of flat files, version-control system, whatever.
+
+  *	Driver: Implements the behavior of a page.  (This is one half of the 
+	page's class.)
+
+  *	Adapter: Prepares a "skeleton" (abstract tree) of the page.  (This is the 
+	other half of the page's class.)
+
+  *	Renderer: Renders the skeleton for a particular medium (e.g. HTML, 
+	OpenDocument, PDF).
+
+The store and supervisor are specified in configuration files; the driver and 
+adapter are specified by the page being requested; and the renderer may vary 
+between requests for the same page.
+
+Also important is a markup language called Kolophon.  This language is 
+designed to be easy to parse, fairly intuitive, unobtrusive, and unambiguous; 
+it's mainly modeled on Kwiki's Kwid language and MediaWiki markup.  I'm 
+confident a Perl 6 grammar can parse it.  It can represent most HTML 
+semantics; for example, it has separate syntaxes for the <em> and <cite> tags. 
+It can also express several concepts not present in basic HTML, such as 
+transclusion (inclusion of any document managed by Kontent directly into the 
+page) and relation (a bi-directional link between pages indicating that they're
+related--used for category pages, "see also" sections, and so on).
+
+DELIVERABLES
+
+  *	A store.  This will most likely be a simple SQL store, accessed via Perl 
+	5's DBI (and Pugs's Perl 5 interop feature).
+
+  *	A CGI supervisor.
+
+  *	Several classes:
+
+	  *	Kiki, an unowned (editable by anyone) page.  (Think "wiki".)
+
+	  *	Kompose, an owned page, along the lines of an Everything2 writeup.
+
+	  *	Kode, a page containing a piece of Perl 6 code implementing a 
+		one-shot class.
+
+	  *	Any other classes needed to support configuring Kontent from within 
+		itself.
+
+  *	Three renderers:
+
+	  *	Raw (outputs the unformatted content of the page, plus a MIME 
+		type--useful for e.g. stylesheets stored in the system)
+
+	  *	Export (renders the content in a way that can theoretically be 
+		imported to another Kontent store, possibly using XML)
+
+	  *	HTML
+
+  *	The Kolophon parser.
+
+  *	A user system.
+
+  *	Embedded POD or Kwid documentation for system administrators and hackers.
+
+  *	Online documentation sufficient to explain Kontent's basic functions, aimed
+	at end-users.
+
+If time permits, I may also implement Komment, a threaded discussion system 
+along the lines of a message board.  Kontent is designed to include an 
+image-upload system (Kameo) as well, but I suspect implementing this is beyond 
+both my skill and Pugs's abilities.
+
+SCHEDULE
+
+Much of the planning for Kontent is already in my head, so I could start 
+programming full-time as soon as I'm finished with other web design 
+work--probably in late June.  I believe I can make the September deadline.
+
+WHO I AM
+
+I am a 19-year-old Californian, currently studying computing at Oxford 
+University.  I've been programming in Perl for some five years, and HTML for 
+at least seven; I am also skilled with CSS.  I administer a wiki with 
+approximately 100 articles (Wikitokyo, <http://mt.brentdax.com>) and a free 
+file-upload site with over 3000 users and nearly 24,000 files (Filespace, 
+<http://www.filespace.org>); both run off a Linux server in my own home.
+
+When I was in high school, I contributed to Parrot under the name Brent Dax, 
+writing the Configure scripts and the sprintf engine, among other things.  In 
+recent years, I've not had much time for open source work, although I still 
+follow perl6-language and -internals.  I would very much like to get back into 
+it.

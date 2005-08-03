@@ -1,0 +1,77 @@
+                            WWW::Kontent 0.01 README                            
+                            ========================
+
+A couple warnings before we begin:
+
+*** THIS SYSTEM WILL NOT RUN IN PERL 5.  IT REQUIRES THE EXPERIMENTAL PERL 6 ***
+*** COMPILER, PUGS, AND THE CROSS-LANGUAGE PARROT INTERPRETER.               ***
+
+*** THIS RELEASE IS AN EARLY ALPHA, AND IS BY NO MEANS READY FOR DEPLOYMENT. ***
+*** IF YOU'RE THINKING ABOUT USING THIS FOR ANYTHING REAL YET, YOU'RE NUTS.  ***
+*** IT MAY DESTROY YOUR DATA, ERASE YOUR HARD DRIVE, MAX OUT ALL YOUR CREDIT ***
+*** CARDS, OR TELL YOUR MOTHER EXACTLY WHAT YOU'VE BEEN DOING WITH THAT      ***
+*** LOVELY GIRL YOU'RE GOING OUT WITH.  YOU HAVE BEEN WARNED!                ***
+
+ABOUT KONTENT
+=============
+Kontent is a web content management system written in Perl 6.  Kontent's basic 
+principle is separation of concerns: whenever possible, the  system is 
+separated into swappable components.  The webmaster chooses a "supervisor" to 
+interface with their web server and a "store" to hold all pages in the system; 
+individual pages have different "classes" implementing different behaviors; and 
+each page can be displayed with any of several "renderers" .
+
+Kontent is simple enough to need only a small amount of configuration, and 
+flexible enough to meet the needs of almost any site.  It takes care of the 
+niggling details of web design--tasks like revision control, site templating, 
+and user contributions--leaving only the task of plugging in your own content.
+
+Kontent is currently executable in Pugs installations with Parrot available; 
+the storage subsystem included in this installation also requires the Perl 5 
+interop feature, but an alternate system could be written.
+
+For installation instructions, including how to build a suitable copy of Pugs, 
+see the INSTALL file in this distribution.
+
+ABOUT THIS RELEASE
+==================
+Version 0.01 is an incomplete alpha release.  It implements much of Kontent's 
+basic functionality, such as creation and editing of pages, page versioning, 
+page classes, and multiple renderers.  It does *not* have parsers (to specify 
+formatting in pages), user or access control systems, online configuration (the 
+ability to view and adjust settings via the Web), or online documentation.  It 
+is also missing many page classes which will eventually be implemented.
+
+At this point, while Pugs is quite capable of running Kontent, it does so very 
+slowly.  On my laptop (1.6GHz, 512 MB RAM, MySQL 4.0, Linux) a single request 
+can take up to ten seconds to process.  This has more to do with Pugs than 
+Kontent; Pugs is designed more for ease of hacking than execution speed.
+Further, although I have gone to great lengths to avoid performing operations 
+that are even remotely dangerous, no security work has been done on Kontent.  
+The upshot is that this system should not be run on an unprotected public 
+server; if nothing else, a clueless spider could accidentally DoS you.
+
+The purpose of this release is simply to demonstrate the progress being made 
+and give possible users an idea of what they can expect from the project.  I'm 
+rather excited at the potential this project has been showing; hopefully you 
+will be, too.
+
+ACKNOWLEDGEMENTS
+================
+This project would not be possible without the support of The Perl Foundation 
+and Google's Summer of Code program, and especially my mentor at TPF, Curtis 
+"Ovid" Poe.  Nor would it be possible without the efforts of Larry Wall and the 
+Perl 6 design team to define the language, and Autrijus Tang and the Pugs team 
+to implement it.
+
+MORE INFORMATION
+================
+Development blog:
+    <http://use.perl.org/~brentdax/journal>
+Interview about the project:
+    <http://www.perlfoundation.org/news/2005/socwwwkontent.html>
+Summer of Code 2005 site:
+    <http://code.google.com/summerofcode.html>
+
+Kontent does not yet have an official web site; that will come when it is fast 
+and powerful enough to run the site on it.
