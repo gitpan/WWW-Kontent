@@ -1,0 +1,9 @@
+pagename: "/code/change_user"
+attributes: 
+    kode:adapterbody: "my $skel=WWW::Kontent::Skeleton.new;\n\nif $request.parameters<action> eq 'change' {\n    $skel.add_node('transclude', :location(%.notes<loc>));\n}\nelse {\n    $skel.add_node('header', :level<0>);\n    $skel.children[-1].add_text(~$revision.attributes<kontent:title>);\n\n    $skel.add_node('paragraph');\n    $skel.children[-1].add_text(\"Please enter your username to change users.\");\n    \n    my $f=$skel.add_node('form');\n    $f.add_node('textfield', :name<username>, :label<Username>);\n    $f.add_node('choicefield', :type<action>);\n    $f.children[-1].add_node('choice', :value<change>);\n    $f.children[-1].children[-1].add_text(\"Change user\");\n}\n\nreturn $skel;"
+    kode:driverbody: "if $request.parameters<action> eq 'change' {\n    my $root = $request.root;\n    $root = $root.cur;\n    my $users = $root.resolve(\"users\");\n    my @matches = $users.children_with('kontent:title' => $request.parameters<username>);\n    \n    WWW::Kontent::error(\"Can't find a user named '{$request.parameters<username>}'\", :code(403))\n        unless @matches;\n    \n    %.notes<loc> = \"/users/{@matches[0]}\\{login}\";\n}"
+    kontent:class: "kode"
+    kontent:title: "Change user"
+    kontent:version: "1"
+    rev:author: "/users/contributors"
+    rev:log: "Initial page creation during import."

@@ -1,0 +1,11 @@
+pagename: "/kontent"
+attributes: 
+    fidelius:child: "create(users/root -any) edit(users/root -any) default(any)"
+    fidelius:self: "create(users/root -any) edit(users/root -any) default(any)"
+    kiki:content: "Kontent settings below here"
+    kiki:type: "text/plain"
+    kontent:class: "kategory"
+    kontent:title: "Kontent customization"
+    kontent:version: "1"
+    rev:author: "/users/contributors"
+    rev:log: "Initial page creation during import."

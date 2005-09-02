@@ -6,7 +6,7 @@ WWW::Kontent::Path - Classes for navigating Kontent stores
 
 	my $path = WWW::Kontent::Path.new;
 	$path.parse('foo/bar[42]/baz.pdf{view}');
-	$path.resolve(:in($root));
+	$path.resolve(:in($root), :request($r));
 	say $path.components[0].name;			# foo
 	say $path.components[1].revno;			# 42
 	say ref $path.components[3].revision;	# WWW::Kontent::Store::NarrowDBI::SavedRev
@@ -73,9 +73,10 @@ class WWW::Kontent::Component is rw {
     has WWW::Kontent::Page $.page;
     has WWW::Kontent::Revision $.revision;
     
-    method resolve_in(WWW::Kontent::SavedRevision $in) returns WWW::Kontent::Revision {
+    method resolve_in(WWW::Kontent::SavedRevision $in, WWW::Kontent::Request $request) returns WWW::Kontent::Revision {
+    	$request.trigger_magic('pre', 'resolve', $_, $in);
         if $in {
-            $.page = $in.resolve($.name);
+            $.page = $in.resolve($.name, $request);
         }
         
         if $.revno {
@@ -85,6 +86,9 @@ class WWW::Kontent::Component is rw {
             $.revision = $.page.cur;
         }
         
+        $.revision = $request.trigger_magic('post', 'resolve', $_, $in, $.revision);
+  		$.page     = $.revision.page;
+  		
         return $.revision;
     }
     
@@ -99,8 +103,8 @@ class WWW::Kontent::Component is rw {
 
 Represents a full path (set of components).  Once a Path object has been 
 allocated, a string path must be given to the C<parse> method; later, a call 
-to C<resolve> (with the root node passed in) will find the pages and revisions 
-associated with those path components.
+to C<resolve> (with the root node and request passed in) will find the pages 
+and revisions associated with those path components.
 
 The C<components> accessor, filled in by C<parse>, contains an array of 
 Component objects.  The C<mode> accessor contains the mode, while the C<format> 
@@ -159,13 +163,13 @@ class WWW::Kontent::Path {
         return $_;
     }
     
-    method resolve(WWW::Kontent::SavedPage $in) returns WWW::Kontent::SavedRevision {
+    method resolve(WWW::Kontent::SavedPage $in, WWW::Kontent::Request $request) returns WWW::Kontent::SavedRevision {
     	WWW::Kontent::error("Can't resolve a path which hasn't been parsed yet!")
     		unless @.components;
         @.components[0].page = $in;
         
         my $cur;
-        $cur = $_.resolve_in($cur) for @.components;
+        $cur = $_.resolve_in($cur, $request) for @.components;
         return $cur;
     }
     

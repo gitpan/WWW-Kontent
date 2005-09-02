@@ -1,0 +1,9 @@
+pagename: "/help/creating_a_new_page"
+attributes: 
+    kiki:content: "Page creation is just as easy as page editing.  To create a page, navigate to the page you want it to be under and click the &``create&'' link.  The procedure to create a page is very similar to the [[Editing an existing page||procedure to edit one]], except (of course) that you'll be starting from scratch."
+    kiki:type: "text/x-kolophon"
+    kontent:class: "kiki"
+    kontent:title: "Creating a new page"
+    kontent:version: "1"
+    rev:author: "/users/contributors"
+    rev:log: "Initial page creation during import."

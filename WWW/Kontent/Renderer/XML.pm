@@ -1,3 +1,28 @@
+=head1 NAME
+
+WWW::Kontent::Renderer::XML - XML renderer for Kontent
+
+=head1 SYNOPSIS
+
+	GET /path/to/page.xml
+
+=head1 DESCRIPTION
+
+The XML renderer renders a Kontent page into XML.  Currently it does this by 
+listing the revision's attributes and then dumping the skeleton in an XML 
+format.  The dumped skeleton contains everything necessary to recreate the 
+skeleton later, makingit useful for syndicating content.
+
+Note, however, that this is scheduled to change; at some point the 
+attribute-dumping feature will move into a separate mode, and will be 
+separately securable from the skeleton-dumping part.
+
+=head1 SEE ALSO
+
+L<WWW::Kontent>, L<WWW::Kontent::Foundation>
+
+=cut
+
 class WWW::Kontent::Renderer::XML is WWW::Kontent::Renderer;
 WWW::Kontent::register_renderer('xml', ::WWW::Kontent::Renderer::XML);
 

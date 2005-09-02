@@ -1,0 +1,9 @@
+pagename: "/users"
+attributes: 
+    kategory:class: "user"
+    kategory:version: "1"
+    kontent:class: "kategory"
+    kontent:title: "Users"
+    kontent:version: "1"
+    rev:author: "/users/contributors"
+    rev:log: "Initial page creation during import."

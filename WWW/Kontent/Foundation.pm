@@ -48,15 +48,16 @@ attribute containing the revision whose class this is; this attribute is
 managed by C<WWW::Kontent::Class> and C<WWW::Kontent::Request> for the benefit 
 of the page class.
 
-Page classes must implement two methods, C<driver> and C<adapter>; see 
-L</WWW::Kontent::Revision> for information on their signatures and use.  They 
-may additionally implement the methods C<resolve> and C<create>; the default 
-implementations dispatch to the page object's C<default_resolve> and 
-C<default_create> methods, respectively.  It's very common for a page class to 
-capture the return value from this base class's C<create> method and set some 
-attributes, usually the C<kontent:class> attribute.
+Page classes must implement three methods, C<driver>, C<adapter>, and 
+C<modelist>; see L</WWW::Kontent::Revision> for information on their signatures 
+and use.  They may additionally implement the methods C<resolve> and 
+C<create>; the default implementations dispatch to the page object's 
+C<default_resolve> and C<default_create> methods, respectively.  It's very 
+common for a page class to capture the return value from this base class's 
+C<create> method and set some attributes, usually the C<kontent:class> 
+attribute.
 
-To avoid a rather annoying Pugs bug, the four methods currently have an 
+To avoid a rather annoying Pugs bug, the five methods currently have an 
 underscore appended to their names; that is, they're named C<driver_> and so on.
 
 =cut
@@ -65,8 +66,9 @@ class WWW::Kontent::Class {
 	has $.revision is rw;
 	
 	submethod BUILD($.revision) { }
-	method driver_(WWW::Kontent::Request $r)  returns Void  {...}
-	method adapter_(WWW::Kontent::Request $r) returns WWW::Kontent::Skeleton {...}
+	method driver_(WWW::Kontent::Request $r)   returns Void  {...}
+	method adapter_(WWW::Kontent::Request $r)  returns WWW::Kontent::Skeleton {...}
+	method modelist_(WWW::Kontent::Request $r) returns Array of Str {...}
 	
 	# See note in Revision body
 	method resolve_(Str $name) returns WWW::Kontent::Page {

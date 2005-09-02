@@ -1,0 +1,9 @@
+pagename: "/help/syndicating_and_the_xml_view"
+attributes: 
+    kiki:content: "Kontent is designed to accommodate not only human users, but computer ones as well.  The XML view is designed to be computer-friendly; it contains the contents fo the internal skeleton representing the page's formatting, which can be used to render the page in any format.  It also provies insight into the internal structures of the page."
+    kiki:type: "text/x-kolophon"
+    kontent:class: "kiki"
+    kontent:title: "Syndicating and the XML view"
+    kontent:version: "1"
+    rev:author: "/users/contributors"
+    rev:log: "Initial page creation during import."

@@ -1,0 +1,10 @@
+pagename: "/kontent/settings/uri_prefix"
+attributes: 
+    kontent:class: "setting"
+    kontent:title: "uri_prefix"
+    kontent:version: "1"
+    rev:author: "/users/contributors"
+    rev:log: "Initial page creation during import."
+    setting:desc: "The ``uri_prefix`` setting specifies a string to be prepended to all URIs for pages in the current Kontent instance.  It can be used to specify a server name and directory, or just a directory; it can also be left empty to indicate that the root directory should be used.  If only a directory is specified, it should include a leading slash."
+    setting:desctype: "text/x-kolophon"
+    setting:value: "/kontent"

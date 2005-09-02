@@ -1,0 +1,9 @@
+pagename: "/help/user_accounts"
+attributes: 
+    kiki:content: "Although many Kontent-based sites allow users to edit anonymously, many do not, or restrict the ability to edit some pages.  In any case, creating and using a user account is always recommended, as it allows your edits to be attributed to you.\n\n= Creating a user account\n\nTo create an account, navigate to the [[Users]] section of the site and click the &``create&'' tab.  You will need to provide a username and password, and possibly other information depending on the site.\n\n= Logging in\n\nYou will be logged out each time you close your browser.  To log back in, click the &``change user&'' link near the top of your page.  Enter your username, then your password when prompted for it, and you'll be logged in."
+    kiki:type: "text/x-kolophon"
+    kontent:class: "kiki"
+    kontent:title: "User accounts"
+    kontent:version: "1"
+    rev:author: "/users/contributors"
+    rev:log: "Initial page creation during import."

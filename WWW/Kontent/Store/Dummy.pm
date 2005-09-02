@@ -1,3 +1,16 @@
+=head1 NAME
+
+WWW::Kontent::Store::Dummy - defunct test store
+
+=head1 DESCRIPTION
+
+This module was used as a dummy store very early in Kontent's development.  It 
+has not been kept up, and is now utterly useless.  Do not attempt to use it.
+
+This module will almost certainly be removed in future versions.
+
+=cut
+
 use WWW::Kontent::Foundation;
 
 module WWW::Kontent::Store::Dummy;

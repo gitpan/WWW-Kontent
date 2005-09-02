@@ -1,0 +1,11 @@
+pagename: "/code"
+attributes: 
+    fidelius:child: "edit(users/brent_dax -any) default(any)"
+    fidelius:self: "create(users/brent_dax -any) default(any)"
+    kategory:class: "kode"
+    kategory:version: "1"
+    kontent:class: "kategory"
+    kontent:title: "Code"
+    kontent:version: "1"
+    rev:author: "/users/contributors"
+    rev:log: "Initial page creation during import."

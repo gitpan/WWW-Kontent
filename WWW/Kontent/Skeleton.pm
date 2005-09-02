@@ -29,7 +29,12 @@ whitespace--is displayed.
 
 =item C<skeleton>
 
-This should always be the top-level node of a skeleton.
+This should always be the top-level node of a skeleton, and may also appear 
+within the skeleton.  It does not imply any semantic.
+
+=item C<null>
+
+The null node implies no semantics, but its children should be processed.
 
 =item C<paragraph>
 
@@ -37,18 +42,71 @@ Represents a paragraph of information.
 
 =item C<header>
 
-Has one property, C<level>, ranging between 1 and 4, with lower numbers being 
-more important.  (Higher levels are possible but may not be supported by all 
-renderers.)
+Has one property, C<level>, ranging between 0 and 4, with lower numbers being 
+more important.  Level 0 is reserved for the page's title.  (Higher levels are 
+possible but may not be supported by all renderers.)
 
 =item C<list>
 
-Has one property, C<type>, which may contain either of the values "bulleted" or 
-"numbered".  Children must be C<item>s.
+Represents a list of some kind.  Has one property, C<type>, which may contain 
+any of "bulleted", "numbered", or "definition".  Children must be C<item>s.
+
+B<Note>: Future versions of Kontent are expected to implement definition lists 
+in a different way than they are currently.
 
 =item C<item>
 
-Represents an item in a C<list>.
+Represents an item in a C<list>.  In a definition list, the C<type> property 
+can be set to C<term> to indicate the item in question is a term, rather than a 
+definition.
+
+=item C<table>
+
+Represents a table.  Its children are C<row> nodes, whose children are C<cell> 
+nodes.
+
+=item C<row>
+
+Represents a row in a table.  Its children must be C<cell> nodes.
+
+=item C<cell>
+
+Represents a cell in a table row.  If the C<type> property is set to C<header>, 
+the cell should be treated as a header cell.
+
+=item C<emphasis>
+
+Indicates that its child nodes should be emphasized in some manner, usually by 
+italicizing.
+
+=item C<strong>
+
+Indicates that its child nodes should be given strong emphasis, usually by 
+bolding.
+
+=item C<title>
+
+Indicates that its child nodes should be formatted as if they are the title of 
+a book or other work.
+
+=item C<struck>
+
+Indicates that its child nodes should be crossed out or otherwise visibly 
+"deleted".
+
+=item C<superscript>
+
+Indicates that its child nodes should be formatted as a superscript.
+
+=item C<subscript>
+
+Indicates that its child nodes should be formatted as a subscript.
+
+=item C<code>
+
+Indicates that its child nodes should be formatted as a piece of code.  If the 
+C<type> field is set to C<paragraph>, the code should be treated as a separate 
+paragraph and possibly indented.
 
 =item C<link>
 
@@ -56,6 +114,12 @@ Represents a hyperlink.  Has one property, C<location>, containing a Kontent
 path or fully-qualified URL.  (Kontent paths will never have a colon in them, 
 while URLs always will.)  If a C<link> node has no children, most renderers 
 will fill in the page's title.
+
+=item C<transclude>
+
+Represents a transclusion, indicating that the textual content of the page 
+indicated by C<location> should be inserted into the current page.  This is 
+usually achieved through use of a subrequest.
 
 =item C<form>
 
@@ -93,6 +157,17 @@ determine the label text for the choice.
 
 A metafield is an invisible field carrying information back to the server.  The 
 C<name> and C<value> properties work basically as above.
+
+=item C<!>
+
+A node whose name consists solely of an exclamation point indicates a warning 
+message, usually meaning that the parser found an error in the markup used to 
+generate the skeleton.  Each warning has a message, kept (appropriately enough) 
+in its C<message> property.
+
+Warnings should be displayed in a noticable but non-disruptive fashion; in the 
+HTML renderer, for example, they take the form of a red exclamation point with 
+a tooltip containing the message.  
 
 =back 4
 
@@ -146,6 +221,55 @@ method add_text(Str *@content) {
 		@.children=[ *@content ];
 	}
 	return *@content;
+}
+
+my sub quote($str is copy) {
+	$str ~~ s:g{\\}{\\\\};
+	$str ~~ s:g{"}{\\"};
+	$str ~~ s:g{\n}{\\n};
+	$str ~~ s:g{\015}{\\r};
+	return qq("$str");
+}
+
+=item C<dump>()
+
+Returns an array of strings representing the skeleton from the current node 
+down; each string should be treated as a separate line.
+
+=cut
+
+method dump() {
+	return gather { 
+		take "$.tagname (" ~ ( map -> $k, $v { qq($k=&quote($v)) } %.properties.kv ) ~ ")";
+		for @.children {
+			if $_ ~~ Str {
+				take qq(    &quote($_));
+			}
+			else {
+				take map { "    $_" } $_.dump;
+			}
+		}
+	};
+}
+
+=item C<text>()
+
+Assembles a string consisting of all text nodes below the current node, 
+concatenated together.
+
+=cut
+
+method text() {
+	return [~] gather {
+		for .children {
+			if $_ ~~ Str {
+				take $_;
+			}
+			else {
+				take $_.text();
+			}
+		}
+	}
 }
 
 =back 4

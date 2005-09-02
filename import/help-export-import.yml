@@ -1,0 +1,9 @@
+pagename: "/help/export_page_and_import_page"
+attributes: 
+    kiki:content: "If for no other reason than initially loading pages into the store, it is very important that users be able to export and import revisions.  This is achieved through the use of command-line the ``export_page`` and ``import_page`` (actually ``export_page.p6`` and ``import_page.p6``) programs.   ``export_page`` takes a page's name as its argument and prints a YAML dump of it to STDOUT; ``import_page`` takes such a YAML dump on STDIN and inserts it into the Kontent store, optionally changing its log message to a command-line argument if provided.\n\nThe ``export_page`` and ``import_page`` pair of programs aren't really designed to be used to edit existing pages; the [[k_manip]] tool is better-suited for that purpose."
+    kiki:type: "text/x-kolophon"
+    kontent:class: "kiki"
+    kontent:title: "export_page and import_page"
+    kontent:version: "1"
+    rev:author: "/users/contributors"
+    rev:log: "Initial page creation during import."

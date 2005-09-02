@@ -1,0 +1,9 @@
+pagename: "/help/editing_an_existing_page"
+attributes: 
+    kiki:content: "Most Kontent pages can be edited through the Web, and depending on a site's configuration, many can be edited by anyone.  To edit a page, simply click on the &``edit&'' link near the top; the page's edit mode will them be displayed.  This will display a series of fill-in fields and buttons; the exact arrangement of them will vary, but they often include:\n\n; Page title\n: This is the title of the page, i.e. the text displayed at the top of it.\n; Content\n: This is usually a large, unlabeled field.  It is often formatted with a markup language such as [[Kolophon]].\n; Log message\n: This is a message that will appear next to the revision when the page's history mode is used.\n\nMany pages will have a &``preview changes&'' button, which you can use to see what your changes will look like before you save them.  Either way, when you're finished simply click &``save changes&'' and your changes will be saved."
+    kiki:type: "text/x-kolophon"
+    kontent:class: "kiki"
+    kontent:title: "Editing an existing page"
+    kontent:version: "1"
+    rev:author: "/users/contributors"
+    rev:log: "Initial page creation during import."

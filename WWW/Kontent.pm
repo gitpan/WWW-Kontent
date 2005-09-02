@@ -1,6 +1,7 @@
 use WWW::Kontent::Foundation;
 use WWW::Kontent::Exceptions;
 use WWW::Kontent::Path;
+use WWW::Kontent::Session;
 use WWW::Kontent::Request;
 use WWW::Kontent::Skeleton;
 
@@ -98,7 +99,9 @@ decided, or Perl 5 otherwise.
 
 use FindBin;
 
-our (&get_root, &make_root, %conf);
+our (&make_root, %conf);
+
+my &_get_root;
 
 {
 	my $conffile="$FindBin::Bin/kontent-config.yaml";
@@ -112,11 +115,51 @@ our (&get_root, &make_root, %conf);
 	}
 	
 	my $store="WWW::Kontent::Store::%conf<store><module>";
-	&get_root := (eval "\&{$store}::get_root").assuming(%WWW::Kontent::conf<store>);
+	&_get_root := (eval "\&{$store}::get_root").assuming(%WWW::Kontent::conf<store>);
 	&make_root := (eval "\&{$store}::make_root").assuming(%WWW::Kontent::conf<store>);
+	
+#	warn %WWW::Kontent::magic.perl();
 }
 
-our(%renderers, %classes);
+our($k_page, $s_page);
+
+sub get_root() {
+	my $root=_get_root();
+	
+	# This can fail before /kontent and /kontent/settings are created.
+	try {
+		my $cur=$root.cur;
+		$k_page=$cur.resolve("kontent");
+		
+		$cur=$k_page.cur;
+		$s_page=$cur.resolve("settings");
+	};
+	
+	return $root;
+}
+
+sub setting($name) {
+	return unless defined $s_page;
+	
+	my $value;
+	try {
+		my $cur=$s_page.cur;
+		my $setting=$cur.resolve($name);
+		
+		$cur=$setting.cur();
+		$value=~$cur.attributes<setting:value>;
+	};
+	return $value;
+}
+
+our %magic;
+sub register_magic($when, $event, $code) {
+#	warn "Registering: $when $event $code";
+	%magic{$when}{$event} //= [];
+	%magic{$when}{$event}.push($code);
+}
+
+our(%renderers, %classes, %parsers);
 
 sub register_renderer($name, $class) {
 	%renderers{$name} = $class;
@@ -125,3 +168,14 @@ sub register_renderer($name, $class) {
 sub register_class($name, $class) {
 	%classes{$name} = $class;
 }
+
+sub register_parser($type, $class) {
+	%parsers{$type} = $class;
+}
+
+sub parse($text, $type, $request) {
+	%parsers{~$type}(~$text, $request);
+}
+
+# built-in classes and such
+use WWW::Kontent::Class::Setting;

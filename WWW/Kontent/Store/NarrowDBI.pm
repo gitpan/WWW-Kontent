@@ -66,7 +66,12 @@ such, it is perhaps one of the least efficient designs for a DBI store, as each
 page retrieval requires that several rows be selected from the attributes table.
 
 A second table maps revision IDs to page IDs and revision numbers; a third maps 
-page IDs to parent/name pairs, and keeps track of the page's current revision.
+page IDs to parent/name pairs, and keeps track of the page's current revision.  
+A forth table represents the pool.
+
+=head1 SEE ALSO
+
+L<WWW::Kontent>, L<WWW::Kontent::Store>
 
 =cut
 
@@ -76,9 +81,11 @@ class WWW::Kontent::Store::NarrowDBI::SavedPage is WWW::Kontent::SavedPage {...}
 class WWW::Kontent::Store::NarrowDBI::DraftPage is WWW::Kontent::DraftPage {...}
 class WWW::Kontent::Store::NarrowDBI::SavedRev is WWW::Kontent::SavedRevision {...}
 class WWW::Kontent::Store::NarrowDBI::DraftRev is WWW::Kontent::DraftRevision {...}
+class WWW::Kontent::Store::NarrowDBI::Pool {...}
 
 use WWW::Kontent::Store::NarrowDBI::Pages;
 use WWW::Kontent::Store::NarrowDBI::Revs;
+use WWW::Kontent::Store::NarrowDBI::Pool;
 
 my sub prep_sql($dbh, $sql) {
 	return $dbh.prepare($sql) or WWW::Kontent::error "Can't prepare statement handle";
@@ -91,7 +98,7 @@ sub handles($p) {
 #	$dbh.trace(1);
 	my $transaction_in_progress=0;
 
-	my %sth={
+	my %sth=(
 		dbh			=> $dbh,
 		
 		getpageinfo => prep_sql($dbh, "SELECT pageid, currevno FROM kontent_narrow_pages WHERE parent = ? AND name = ?"),
@@ -103,17 +110,25 @@ sub handles($p) {
 		updaterevno => prep_sql($dbh, "UPDATE kontent_narrow_pages SET currevno = ? WHERE pageid = ?"),
 		addpage		=> prep_sql($dbh, "INSERT INTO kontent_narrow_pages (parent, name)		 VALUES (?, ?)"),
 		
+		getpooldata => prep_sql($dbh, "SELECT value FROM kontent_narrow_pool WHERE `module` = ? AND `key` = ?"),
+		addpooldata => prep_sql($dbh, "INSERT INTO kontent_narrow_pool (`module`, `key`, `value`, `time`) VALUES (?,?,?,?)"),
+		setpooldata => prep_sql($dbh, "UPDATE kontent_narrow_pool SET `value` = ?, `time` = ? WHERE `module` = ? AND `key` = ?"),
+		delpooldata => prep_sql($dbh, "DELETE FROM kontent_narrow_pool WHERE `module` = ? AND `key` = ?"),
+		listpooldata=> prep_sql($dbh, "SELECT key FROM kontent_narrow_pool WHERE `module` = ?"),
+		getpooltime => prep_sql($dbh, "SELECT time FROM kontent_narrow_pool WHERE `module` = ? AND `key` = ?"),
+		setpooltime => prep_sql($dbh, "UPDATE kontent_narrow_pool SET `time` = ? WHERE `module` = ? AND `key` = ?"),
+		
 		begin       => { $transaction_in_progress=1 if $dbh.begin_work },
 		commit      => { $dbh.commit   if $transaction_in_progress },
 		rollback	=> { $dbh.rollback if $transaction_in_progress }
-	};
+	);
 	
 	return %sth;
 }
 
 sub get_root($p) returns WWW::Kontent::Store::NarrowDBI::SavedPage {
 	my %sth=handles($p);
-	return WWW::Kontent::Store::NarrowDBI::SavedPage.new(:parent(undef), :name($p<rootname>), :sth(%sth));
+	return WWW::Kontent::Store::NarrowDBI::SavedPage.new(:parent(undef), :name($p<rootname>), :sth(\%sth));
 }
 
 sub make_root($p) {
@@ -168,13 +183,29 @@ sub make_root($p) {
 		say "Attrs table already exists--skipping.";
 	}
 	
+	unless $dbh.do("SELECT COUNT(*) FROM kontent_narrow_pool") {
+		say "Creating pool table...";
+		$dbh.do(qq{
+			CREATE TABLE `kontent_narrow_pool` (
+				`module` TINYTEXT NOT NULL,
+				`key`    TINYTEXT NOT NULL,
+				`value`  MEDIUMTEXT NOT NULL,
+				`time`   DOUBLE PRECISION NOT NULL,
+				PRIMARY KEY  (`module`(32),`key`(32))
+			);
+		}) or die "Can't create pool table: $dbh.errstr()";
+	}
+	else {
+		say "Pool table already exists--skipping.";
+	}
+	
 	#Create and retrieve root page.
 	say "Preparing root page...";
 	my $rootdraft=WWW::Kontent::Store::NarrowDBI::DraftPage.new(
 		:parent(0), :name($p<rootname>), :sth(%sth)
 	);
 	my $rev=$rootdraft.draft_revision;
-	$rev.attributes<rev:author>='/users/kontent_contributors';
+	$rev.attributes<rev:author>='/users/contributors';
 	$rev.attributes<rev:log>='Initial revision inserted by make_root';
 	
 	$rev.attributes<kontent:class>='kiki';
@@ -182,18 +213,16 @@ sub make_root($p) {
 	$rev.attributes<kontent:title>='Kontent root page';
 	
 	$rev.attributes<kiki:type>='text/x-kolophon';
-	$rev.attributes<kiki:content>=q{This is the Kontent store's root page.
-
-You can edit this page by clicking the "Edit" link above, or create a new page directly below it by clicking the "Create" link.  You can also review this page's revision history by clicking "History".  The "Export" link uses XML to give you insight into what's going on behind the scenes.
-
-In this early version of Kontent, it is not yet possible to insert formatting or links into pages, log in and associate your edits with a particular user, or change a page's class.  The last of those functions can be performed with the command-line k_manip tool--use perldoc on it for details.  However, you can get a sense for Kontent's capabilities, and hopefully you'll be excited by its potential.
-
-Please note that all pages included in the Kontent distribution are licensed under a Creative Commons Attribution license.  The authors of these pages may simply be credited as "Kontent contributors".
-
-    --Brent Royal-Gordon};
+	$rev.attributes<kiki:content>=q{This is the Kontent store's root page.};
 	
 	say "Committing root page...";
-	$rev.commit();
+	try {
+		$rev.commit();
+	};
+	if $! {
+		say "Commit failed: $!";
+		say "Please ensure that there's nothing wrong with the tables before trying to use Kontent.";
+	}
 	
 	say "Done.";
 	return get_root($p);

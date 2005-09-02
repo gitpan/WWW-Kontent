@@ -1,0 +1,9 @@
+pagename: "/help"
+attributes: 
+    kiki:content: "Welcome!  Kontent is a flexible and powerful system for running a website; this help section is designed to help you understand how to use it.  Site administrators are encouraged to customize this section to describe your site's setup; however, please do not remove the copyright information at the bottom of the page.\n\n== Reading\n\n* [[Navigating]]\n\n== Writing\n\n* [[User accounts]]\n* [[Editing an existing page]]\n* [[Kolophon]]\n* [[Creating a new page]]\n\n== Advanced topics\n\n* [[Concepts]]\n* [[Syndicating and the XML view]]\n\n= For administrators\n\n== Getting started\n\n* [[Concretes]]\n* [[Kontent setup]]\n* [[Customizing Kontent]]\n\n== Command-line tools\n\n* [[k_manip]]\n* [[export_page and import_page]]\n\n== Advanced topics\n\n* [[Securing pages with Fidelius]]\n\n= For programmers\n\nKontent ships with complete documentation in Perl's standard POD format.  The ``perldoc`` utility (included with Perl) can be used to extract and format it.\n\n= Acknowledgements\n\nThe contents of this section are based on work by [[/users/Kontent contributors||]] and are used under the terms of the [[http://creativecommons.org/licenses/by/2.5/||Creative Commons Attribution license, version 2.5]]."
+    kiki:type: "text/x-kolophon"
+    kontent:class: "kiki"
+    kontent:title: "Help"
+    kontent:version: "1"
+    rev:author: "/users/contributors"
+    rev:log: "Initial page creation during import."

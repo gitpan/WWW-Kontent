@@ -7,8 +7,9 @@ WWW::Kontent::Request - Kontent request object
 	# Eventually, when Pugs supports this sort of thing
 	method adapter(WWW::Kontent::Request $request where { .mode eq 'view' }) {
 		return WWW::Kontent::Parser::parse(
-			:type($.attributes<kiki:type>),
-			:content($.attributes<kiki:content>),
+			$.attributes<kiki:content>,
+			$.attributes<kiki:type>,
+			$request
 		);
 	}
 
@@ -37,7 +38,7 @@ Parse and resolve paths.
 
 =over 4
 
-=item C<path>
+=item C<pagepath>
 
 L<WWW::Kontent::Path> object representing the path being resolved in this 
 request.
@@ -58,10 +59,9 @@ in C<path>.
 
 =item C<parameters>
 
-Contains a hash of parameters to the page.  Parameters may be accessed in 
-Kolophon by using $$NAME, and are used to communicate information to drivers 
-besides the mode and format; they usually correspond to HTTP POST or GET 
-parameters.
+Contains a hash of parameters to the page.  Parameters are used to communicate 
+information to drivers besides the mode and format; they usually correspond to 
+HTTP POST or GET parameters.
 
 =item C<nested>
 
@@ -89,7 +89,7 @@ Contains the store's root page.
 
 =item C<revision>
 
-After a call to C<.path.resolve>, contains the page and revision so resolved.
+After a call to C<.resolve>, contains the page and revision so resolved.
 These fields should usually be used only by supervisors; the request object 
 will arrange for renderers and page classes to receive their own references to 
 the revision object.
@@ -97,6 +97,19 @@ the revision object.
 =item C<renderer>
 
 Contains the renderer to be used for this request.
+
+=item C<session>
+
+Contains a L<WWW::Kontent::Session> object for the current session.
+
+=item C<userpath>
+
+Contains the path to the current user object.  This is retrieved from the 
+session during object construction.
+
+=item C<user>
+
+Contains the current revision of the user page.
 
 =back 4
 
@@ -106,32 +119,53 @@ class WWW::Kontent::Request {
 	has WWW::Kontent::Page $.root is rw;
 	has Str %.parameters          is rw;
 	
-	has WWW::Kontent::Path $.path is rw;
-	method page()         { $.path.page     }
-	method revision()     { $.path.revision }
-	method mode()   is rw { $.path.mode     }
-	method format() is rw { $.path.format   }
+	has WWW::Kontent::Path $.userpath is rw;
+	method user()         { $.userpath.revision  }
+	method user_pathstr() {
+		if $.userpath {
+			my $page=$.userpath.page;
+			return $page.path;
+		}
+		else {
+			return '';
+		}
+	}
 	
-	has String $.type   is rw;
-	has Int    $.status	is rw;
+	has WWW::Kontent::Path $.pagepath is rw;
+	method page()         { $.pagepath.page      }
+	method revision()     { $.pagepath.revision  }
+	method mode()   is rw { $.pagepath.mode      }
+	method format() is rw { $.pagepath.format    }
+	
+	has Str $.type     is rw;
+	has Int $.status   is rw;
+	has Str $.location is rw;
 	
 	has int $.nested is rw;
+	
 	has WWW::Kontent::Renderer $.renderer;
+	has WWW::Kontent::Session  $.session;
 	
 =head2 Constructors
 
 =over 4
 
-=item C<< WWW::Kontent::Request.new(:root($store_root), :path("/foo/bar[42].atom{edit}"), :parameters({ baz => 'quux' })) >>
+=item C<WWW::Kontent::Request.new>(:root($store_root), :path("/foo/bar[42].atom{edit}"), :sid($session_id), :parameters({ baz => 'quux' }));
 
 The normal constructor for a Request object; usually called only from the 
 supervisor.  Parses C<path> if provided to acquire an address.
 
 =cut
 
-	submethod BUILD($.root, ?$path, +%.parameters) {
-		$.path = WWW::Kontent::Path.new().parse($path);
-		$.status = 200;
+	submethod BUILD($.root, ?$path, ?$sid, +%.parameters, +$loaduser = 1) {
+		$.session  = WWW::Kontent::Session.new(:root($.root), :sid($sid));
+		
+		my $user = try { $.session.get("identity") }
+				// WWW::Kontent::setting("default_user")
+				// '/users/anonymous';
+		$.userpath = WWW::Kontent::Path.new().parse($user) if $loaduser;
+		$.pagepath = WWW::Kontent::Path.new().parse($path);
+		$.status   = 200;
 	}
 
 =item C<$request.subrequest($path, { :param1<value1>, :param2<value2> })>
@@ -152,7 +186,7 @@ do in an HTML renderer.
 		$ret.nested++;
 		
 		$ret.parameters = %parameters;
-		$ret.path = WWW::Kontent::Path.new().parse($path);
+		$ret.pagepath = WWW::Kontent::Path.new().parse($path);
 		return $ret;
 	}
 
@@ -162,46 +196,158 @@ do in an HTML renderer.
 
 =over 4
 
+=item C<resolve_all>
+
+Tells the objects in the C<userpath> and C<pagepath> attributes to resolve 
+themselves; in the process, fills the C<user>, C<page>, and C<revision> 
+attributes.
+
+=cut
+
+	method resolve_all() {
+		$.userpath.resolve($.root, $_) if $.userpath;
+		$.pagepath.resolve($.root, $_);
+	}
+
 =item C<go>
 
-Convenience method which calls C<.path.resolve>, then the revision's driver, 
+Convenience method which calls C<.resolve>, then the revision's driver, 
 and finally the renderer.  Returns a string containing the renderer's output.  
 It also handles restarts and other inner exceptions.
 
 =cut
 	
-	method go(WWW::Kontent::Request $r: ) {
-		# Limited to avoid infinite loops
-		for(0..15) {
-			#try
-			{
-				$.path.resolve($.root);
-				my $rev=$r.revision;
-				$rev.driver($r);
-				
-				$.renderer=%WWW::Kontent::renderers{$.path.format}.new()
-					unless $.renderer;
-				return $.renderer.render($r);
-			};
+	method go(WWW::Kontent::Request $r: Int ?$depth = 0) {
+		my Str $output;
+		
+		#try {
+			$r.resolve_all();
 			
-			if    $! ~~ /^\[restart\]/ { next }
-			elsif $! ~~ /^\[(\d\d\d)\] (.*)/ {
-				$.status = $0;
-				$.type   = 'text/plain';
-				return "Error: $1";
-			}
-			elsif defined $! {
-				die $!;
+			my $rev=$r.revision;
+			$rev.driver($r);
+			
+			$.renderer=%WWW::Kontent::renderers{$.pagepath.format}.new()
+				unless $.renderer;
+			$output=$.renderer.render($r);
+		#};
+		
+		if    $! ~~ /^\[restart\]/ {
+			if $depth < 8 {
+				$r.go($depth+1);
 			}
 			else {
-				last;
+				$.status = 504;
+				$.type   = 'text/plain';
+				return "Error: restart limit exceeded--possible restart loop";
+			}
+		}
+		elsif $! ~~ /^\[(\d\d\d)\] (.*)/ {
+			$.status = $0;
+			$.type   = 'text/plain';
+			return "Error: $1";
+		}
+		elsif defined $! {
+			$.status = 500;
+			$.type   = 'text/plain';
+			return "Uncaught exception: $!";
+		}
+		else {
+			return $output;
+		}
+	}
+	
+	method :resolve_partial($self: Str $path) {
+		if $path eq '' {
+			# Empty path--could refer to the current page or any of its 
+			# parents.  Return them all and let the caller deal with the 
+			# repercussions.
+			return gather {
+				my $cursor=$.pagepath.page;
+				while $cursor {
+					take $cursor.cur;
+					$cursor = $cursor.parent;
+				}
 			}
 		}
 		
-		# We can only get here if the above loop never returned
-		$.status = 504;
-		$.type   = 'text/plain';
-		return 'Request restart limit exceeded (possible restart loop).';
+		my $pathobj=WWW::Kontent::Path.new().parse($path);
+		
+		if $path ~~ m{^/} {
+			# Full path--just resolve from the root page.
+			
+			try { $pathobj.resolve($.root, $self) };
+			return [ $pathobj.revision ];
+		}
+		else {
+			# Partial path--try to resolve the path under the current page, 
+			# then each of its ancestors.
+			
+			return gather {
+				my $cursor=$.pagepath.page;
+				
+				while $cursor {
+					try {
+						$pathobj.resolve($cursor, $self);
+						take $pathobj.revision;
+					};
+					$cursor = $cursor.parent;
+				}
+			}
+		}
+	}
+	
+=item c<grok_link>($path)
+
+Resolves a partial path (one that may be relative to the current page or any of 
+its parents, and whose final component may be the title of a page rather than 
+its name).  Returns an array of Revision objects which match the path in 
+question.
+
+=cut
+	
+	method grok_link(Str $path) returns Array of WWW::Kontent::Revision {
+		# If the last component looks like a path, not a title...
+		if $path ~~ m< / \w+ [ \.\w+ ]? [ \{ \w+ \} ]? $> {
+			# Attempt to resolve normally.
+			my $ret=.:resolve_partial($path);
+			return [ $ret[0] ] if $ret;
+		}
+		
+		# If we got here, path resolution didn't work--we'll have to use title 
+		# resolution.
+		if $path ~~ m{^ (.*) [^|/] (<-[/]>+) $} {
+			my ($prefix, $title)=(~$0, ~$1);
+			
+			my @candidates=.:resolve_partial($prefix);
+			for *@candidates -> $rev {
+				my $page=$rev.page;
+				my @results;
+				if @results = $page.children_with('kontent:title' => $title) {
+					return map {
+						my $sp=$rev.resolve(~$_);
+						$sp.cur
+					} @results;
+				}
+			}
+		}
+		
+		return [];
+	}
+	
+=item C<trigger_magic>('pre', 'resolve', $foo, $bar)
+
+Triggers any magic hooks associated with the event in question.  The last 
+data argument is returned, and may be modified by the magic hooks.
+
+=cut
+	
+	method trigger_magic($self: $when, $event, *@args is copy) {
+#		warn "triggering $when-$event magic: {@args.perl()}";
+		if %WWW::Kontent::magic{$when}{$event} {
+#			warn "    There is magic for this event.";
+			$_($self, @args) for *%WWW::Kontent::magic{$when}{$event};
+		}
+		return @args[-1];
 	}
 }
 

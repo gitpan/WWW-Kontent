@@ -1,0 +1,281 @@
+Kolophon is a simple markup language used to apply formatting to pages.  It 
+consists of only a few commands, but those few can handle the most common types 
+of formatting users need.
+
+Most characters in a Kolophon document are treated as simple characters and 
+copied exactly as they are.  However, certain pairs of characters are treated 
+as //tags// speficying formatting.  Additionally, some characters at the 
+beginning of a line have special meaning.
+
+= Text formatting
+
+== Basic formatting
+
+! To format...
+! Use the code...
+! Which looks like...
+-
+| Bold text
+| ``**some text**``
+| **some text**
+-
+| Italic text
+| ``//some text//``
+| //some text//
+-
+| A title or citation
+| ``__some text__``
+| __some text__
+-
+| Strike-through
+| ``==some text==``
+| ==some text==
+-
+| Superscript
+| ``^^some text^^``
+| ^^some text^^
+-
+| Subscript
+| ``,,some text,,``
+| ,,some text,,
+
+== Literal formatting
+
+! To make...
+! Use the code...
+! Which looks like...
+-
+| A block of code
+| ""``some code``""
+| ``some code``
+-
+| A block of plain text
+| ``""some **unformatted** text""``
+| ""some **unformatted** text""
+-
+| A formatting code not be special
+| ``two *\\* asterisks``
+| two *\\* asterisks
+
+== Links
+
+! To make...
+! Use the code...
+! Which looks like...
+-
+| A link to another site
+| ``[[http://www.google.com]]``
+| [[http://www.google.com]]
+-
+| A link with different text
+| ``[[http://www.google.com||Google]]``
+| [[http://www.google.com||Google]]
+-
+| A link to a local page
+| ``[[Help]]``
+| [[Help]]
+-
+| A link to another section of the site
+| ``[[users/Kontent contributors]]``
+| [[users/Kontent contributors]]
+-
+| An unambiguous link
+| ``[[/users/Kontent contributors]]``
+| [[/users/Kontent contributors]]
+
+A few notes on local links:
+* Although the last portion of a link's address can be a page title or a name, 
+  the earlier portions must use the page's name.  (To figure out what a page 
+  is named, look in your browser's location or address bar.)
+* Links that start with a / will always be taken to be complete paths.  Links 
+  that don't can be under the current page //or any page above it//.
+* If the ``||`` syntax is used but the title portion is left empty, it will be 
+  automatically filled in with the page's title.  This is handy if you're 
+  linking to a long, complex path like ``[[/kontent/settings/uri_prefix||]]``.
+
+== Special links
+
+! To make...
+! Use the code...
+! Which will...
+-
+| Transclusion link
+| ``{{/kontent/settings/site_name}}``
+| Place that page's contents directly in this page
+-
+| Relation link
+| ``<</category/Help pages>>``
+| Put links on both pages
+
+**Note**: Relation is not implemented yet.
+
+= Line formatting
+
+In addition to the text formatting mentioned earlier, Kolophon also has several 
+line formats, which apply to all following lines until the next line format or 
+a blank line.  For example:
+
+`== Common phrases
+`
+`* She sells seashells by the sea shore.
+`* The quick brown fox jumped over the 
+`lazy dog.
+`
+`Of course, there are many other phrases 
+`like these.
+
+Would look something like this:
+
+== Common phrases
+
+* She sells seashells by the sea shore.
+* The quick brown fox jumped over the 
+lazy dog.
+
+Of course, there are many other phrases 
+like these.
+
+== Headings
+
+Headings are indicated with 1&-4 equals signs on the left margin, followed by 
+a space:
+
+`= First-level heading
+`== Second-level heading
+`=== Third-level heading
+`==== Fourth-level heading
+
+== Lists
+
+Bullet lists have an asterisk at the beginning of each list item:
+
+`* Item one
+`* Item two
+`* Item three
+
+* Item 1
+* Item 2
+* Item 3
+
+Number lists have a pound (number) sign instead:
+
+`# Item one
+`# item two
+`# Item three
+
+# Item 1
+# Item 2
+# Item 3
+
+Definition lists have alternating terms (indicated by colons) and definitions 
+(indicated by semicolons):
+
+`; Term 1
+`: Definition 1
+`; Term 2
+`: Definition 2a
+`: Definition 2b
+
+; Term 1
+: Definition 1
+; Term 2
+: Definition 2a
+: Definition 2b
+
+== Tables
+
+Normal cells have a vertical bar (``|``) at the beginning of each line; header 
+cells have an exclamation point (``!``).  A dash will create a new row.
+
+`! Hacker
+`! Language
+`-
+`| Larry Wall
+`| Perl
+`-
+`| Guido van Rossum
+`| Python
+`-
+`| Yukihiro Matsumoto
+`| Ruby
+
+! Hacker
+! Language
+-
+| Larry Wall
+| Perl
+-
+| Guido van Rossum
+| Python
+-
+| Yukihiro Matsumoto
+| Ruby
+
+== Miscellaneous
+
+Code blocks are indicated with a single backtick:
+
+``$revision.adapter($request);
+
+`$revision.adapter($request);
+
+Quote blocks are indicated with a greater-than sign:
+
+`> I love you, always.  Time is nothing.
+
+> I love you, always.  Time is nothing.
+
+= Special characters
+
+Sometimes it can be difficult or impossible to type a character.  Perhaps it's 
+one which Kontent treats specially, such as backslash, space or return, or 
+perhaps it's simply not present on many keyboards.  Kolophon provides special 
+characters to help you in these situations.
+
+Each special character sequence starts with an ampersand (``&``) and is 
+followed by one or more punctuation characters.  The special sequences 
+recognized by Kontent include:
+
+! Character
+! Sequence
+! Example
+-
+| Backslash
+| ``&|``
+| &|
+-
+| Space
+| ``&_``
+| foo&_bar
+-
+| Newline
+| ``&^``
+| foo&^bar
+-
+| Em-dash
+| ``&--``
+| &--
+-
+| En-dash
+| ``&-``
+| &-
+-
+| Left arrow
+| ``&<-``
+| &<-
+-
+| Right arrow
+| ``&->``
+| &->
+-
+| Curly single quotes
+| ""&`"" and ""&'""
+| &`Hello world!&'
+-
+| Curly double quotes
+| ""&``"" and ""&''"" (or ``&"``)
+| &``Hello world!&"
+-
+| Double angle quotes
+| ``&<<`` and ``&>>``
+| &<<Hello world!&>>

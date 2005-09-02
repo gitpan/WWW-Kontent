@@ -1,0 +1,10 @@
+pagename: "/kontent/settings/site_name"
+attributes: 
+    kontent:class: "setting"
+    kontent:title: "site_name"
+    kontent:version: "1"
+    rev:author: "/users/contributors"
+    rev:log: "Initial page creation during import."
+    setting:desc: "The ``site_name`` setting contains the name of the site; its contents will appear at the top of each page in the default HTML template, and also in the title bar.  The exact placement of the string in this setting will vary by renderer."
+    setting:desctype: "text/x-kolophon"
+    setting:value: "Kontent test site"

@@ -1,0 +1,9 @@
+pagename: "/help/customizing_kontent"
+attributes: 
+    kiki:content: "Kontent customization is a fairly simple task.\n\n= Logging in as Root\n\nSome settings can have serious security impacts, so by default the entire ``kontent`` folder is protected from editing by everyone but a user called [[/users/root||Root]].  To log in as Root, click the &``Change user&'' link near the top of the page, then type &``Root&'' into the text box and click the &``change user&'' button.  Once the next page has loaded, enter Root's password, ``eruditorum``.\n\n= Changing Root's password\n\nOnce you've logged in, **you must change Root's password**; otherwise you will be opening your server up to huge security problems.  To do this, click the &``edit&'' tab, enter the new password in both password fields, and click &``save changes&''.\n\n= Finding the settings\n\nNow that you have logged in as Root, you should be able to edit the site's settings.  To do so, navigate to the page [[/kontent/settings]].  Each setting under this page comes with its own documentation, but the two most commonly customized ones are:\n\n; [[/kontent/settings/site_name||site_name]]\n: The name of the site; seen at the top of the page.\n; [[/kontent/settings/uri_prefix||uri_prefix]]\n: A prefix that should be added to the beginning of all addresses."
+    kiki:type: "text/x-kolophon"
+    kontent:class: "kiki"
+    kontent:title: "Customizing Kontent"
+    kontent:version: "1"
+    rev:author: "/users/contributors"
+    rev:log: "Initial page creation during import."

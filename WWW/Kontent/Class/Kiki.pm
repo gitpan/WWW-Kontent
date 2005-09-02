@@ -1,3 +1,53 @@
+=head1 NAME
+
+WWW::Kontent::Class::Kiki - Kiki page class for Kontent
+
+=head1 SYNOPSIS
+
+	# Attributes
+	kontent:class=kiki
+	kontent:version=1
+	kiki:content=Page's content
+	kiki:type=text/x-kolophon
+
+=head1 DESCRIPTION
+
+Kiki is a page class for a general-purpose text page.  Besides the title, it 
+contains only a single body of text, which is parsed of markup (as Kolophon by 
+default).  It does not attempt to block anyone from editing; an access control 
+system such as L<WWW::Kontent::Magic::Fidelius> can be used to limit editing 
+privileges.
+
+=head2 Attributes
+
+Kontent pages are sensitive to the following attributes:
+
+=over 4
+
+=item C<kiki:content>
+
+The text of the page.
+
+=item C<kiki:type>
+
+The MIME type of the text.  Defaults to text/x-kolophon.
+
+=back 4
+
+Kiki's behavior is also affected by standard attributes, such as 
+C<kontent:title>, and attributes controlling the behavior of any magic modules 
+enabled in your Kontent instance.
+
+=head2 MODES
+
+view, history, create, edit
+
+=head1 SEE ALSO
+
+L<WWW::Kontent>, L<WWW::Kontent::Foundation>
+
+=cut
+
 class WWW::Kontent::Class::Kiki is WWW::Kontent::Class;
 WWW::Kontent::register_class('kiki', $?CLASS);
 
@@ -41,7 +91,7 @@ method driver_(WWW::Kontent::Request $request) {
 		
 		$.revision.revno = $p<revno> // $.revision.revno;
 		$.revision.attributes<kiki:type>     = 'text/x-kolophon';
-		$.revision.attributes<rev:author>    = "/users/anonymous";
+		$.revision.attributes<rev:author>    = $request.user_pathstr;
 		$.revision.attributes<rev:log>       = $p<log> // '';
 		
 		$.revision.attributes<kontent:title> =
@@ -61,6 +111,7 @@ method driver_(WWW::Kontent::Request $request) {
 		}
 		
 		if $request.mode eq 'create' | 'edit' and $p<action> eq 'save' {
+			$.revision.attributes<kiki:content> ~~ s:g{\n}{\n};		#Get rid of \r
 			# Save all that hard work!
 			$.revision.commit;
 		}
@@ -89,14 +140,19 @@ method :inner_driver($request) {
 method adapter_(WWW::Kontent::Request $request) {
 	my $rev=.revision;
 	my $page=$rev.page;
-	my $skel=WWW::Kontent::Skeleton.new();
 	
 	if $.draftrev {
 		return $.draftrev.adapter($request);
 	}
 	else {
+		my $skel=WWW::Kontent::Skeleton.new();
 		given $request.mode {
 			when 'create' | 'edit' {
+				my $ing = $request.mode eq 'create' ?? 'creating' :: 'editing';
+				
+				$skel.add_node('header', :level<0>);
+				$skel.children[-1].add_text("{$rev.attributes<kontent:title> // 'Unnamed'} ($ing)");
+				
 				if $request.parameters<action> eq 'save' {
 					$skel.add_node('paragraph');
 					$skel.children[-1].add_text("Your revisions have been saved.  ");
@@ -112,7 +168,12 @@ method adapter_(WWW::Kontent::Request $request) {
 							$skel.add_text("Page name: $page.name()\n");
 						}
 						
-						$skel.add_text($request.parameters<content>);
+						$skel.children.push(
+							WWW::Kontent::parse(
+								$request.parameters<content>, 
+								$.revision.attributes<kiki:type>, $request
+							)
+						);
 					}
 					
 					$skel.add_node('header', :level(1));
@@ -149,9 +210,15 @@ method adapter_(WWW::Kontent::Request $request) {
 				}
 			}
 			default {
-				$skel.add_text(~$rev.attributes<kiki:content>);
+				$skel.add_node('header', :level<0>);
+				$skel.children[-1].add_text(~$rev.attributes<kontent:title>);
+				$skel.children.push(WWW::Kontent::parse(~$rev.attributes<kiki:content>, ~$rev.attributes<kiki:type>, $request));
 			}
 		}
+		return $skel;
 	}
-	return $skel;
+}
+
+method modelist_(WWW::Kontent::Request $request) {
+	return <view history create edit>
 }

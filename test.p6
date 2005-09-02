@@ -28,20 +28,37 @@ L<WWW::Kontent>
 use WWW::Kontent;
 my $root = WWW::Kontent::get_root();
 
-use CGI;
+# Perl 6's CGI.pm doesn't have cookies yet
+use perl5:CGI;
+my $q=CGI.new();
 
-sub get_params {
-	my %params;
-	for param() -> $p {
-		%params{lc $p}=~param($p);
-	}
-	return %params;
+my %params;
+for $q.param() -> $p {
+	%params{lc $p}=~$q.param($p);
 }
 
 my $request=WWW::Kontent::Request.new(
-	:path(~(CGI::path_info() || param('PATH') // '/')),
+	:path(~( $q.path_info() || %params<path>) or '/'  ),
+	:sid(~($q.cookie('sid') || %params<sid> ) or undef),
 	:root($root),
-	:parameters(get_params)
+	:parameters(%params)
 );
+
+my $sess=$request.session;
+my $cookie=$q.cookie('-name', 'sid', '-value', $sess.sid);
+
 my $output=$request.go();
-print header(:status($request.status), :content_type($request.type)), $output;
+WWW::Kontent::Supervisor::emit_header();
+print $output;
+
+sub WWW::Kontent::Supervisor::emit_header() {
+	state $run_before = 0;
+	return if $run_before;
+	
+	print $q.header(
+		'-status',      	$request.status,
+		'-content_type',	$request.type,
+		'-cookie', 			$cookie
+	);
+	$run_before = 1;
+}

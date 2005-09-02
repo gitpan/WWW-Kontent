@@ -1,0 +1,9 @@
+pagename: "/help/navigating"
+attributes: 
+    kiki:content: "= Navigation links\n\nAlthough the default template doesn't have any, most sites will add navigation \nlinks to get to important pages.\n\n= Modes and tabs\n\nEach page on a Kontent site has several tabs along the top.  The &``view&'' tab \nshows the basic content of the page, and is the default.\n\nThe &``history&'' tab shows the history mode.  This mode displays a complete \nediting history of the page.  The first column contains the date and time the \ngiven revision was made; clicking on it will yield the page as it appeared at \nthat time.  The second column contains the name of the user who made the edit.\nThe third contains the log message included with the edit.\n\nThe &``edit&'' and &``create&'' tabs are used by editors.  See [[Editing an existing page]] and [[Creating a new page]] for details.\n\nPages may also have other tabs, depending on their class.\n\n= Links in the body\n\nThe body of the page will frequently contain links.  Hovering over most of them \nwill reveal what page you will reach by clicking it, and clicking will access \nthe target of the link.\n"
+    kiki:type: "text/x-kolophon"
+    kontent:class: "kiki"
+    kontent:title: "Navigating"
+    kontent:version: "1"
+    rev:author: "/users/contributors"
+    rev:log: "Initial page creation during import."

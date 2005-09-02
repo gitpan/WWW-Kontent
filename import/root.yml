@@ -1,0 +1,9 @@
+pagename: "/"
+attributes: 
+    kiki:content: "This is the Kontent store's root page.\n\nYou can edit this page by clicking the &``Edit&'' link above, or create a new page directly below it by clicking the &``Create&'' link.  You can also review this page's revision history by clicking &``History&''.  The &``Export&'' link uses XML to give you insight into what's going on behind the scenes.  No doubt you will want to customize your Kontent instance; to do so, navigate to [[kontent/settings||]] and continue from there.\n\nFormatting is performed with a simple markup language called Kolophon.  For information on how to use Kolophon, see [[help/kolophon||its help page]].\n\nIn this early version of Kontent, it is not yet possible to log in and associate your edits with a particular user; that feature will come soon.  Security is also missing thus far.  However, you can get a sense for Kontent's capabilities, and hopefully you'll be excited by its potential.\n\nPlease note that all pages included in the Kontent distribution are licensed under a Creative Commons Attribution license.  The authors of these pages may simply be credited as &``Kontent contributors&''.\n\n&_ &_ &--Brent Royal-Gordon"
+    kiki:type: "text/x-kolophon"
+    kontent:class: "kiki"
+    kontent:title: "Kontent root page"
+    kontent:version: "1"
+    rev:author: "/users/contributors"
+    rev:log: "Initial page creation during import."

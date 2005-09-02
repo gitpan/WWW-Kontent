@@ -1,0 +1,26 @@
+= Navigation links
+
+Although the default template doesn't have any, most sites will add navigation 
+links to get to important pages.
+
+= Modes and tabs
+
+Each page on a Kontent site has several tabs along the top.  The &``view&'' tab 
+shows the basic content of the page, and is the default.
+
+The &``history&'' tab shows the history mode.  This mode displays a complete 
+editing history of the page.  The first column contains the date and time the 
+given revision was made; clicking on it will yield the page as it appeared at 
+that time.  The second column contains the name of the user who made the edit.
+The third contains the log message included with the edit.
+
+The &``edit&'' and &``create&'' tabs are used by editors.  See [[Editing an 
+existing page]] and [[Creating a new page]] for details.
+
+Pages may also have other tabs, depending on their class.
+
+= Links in the body
+
+The body of the page will frequently contain links.  Hovering over most of them 
+will reveal what page you will reach by clicking it, and clicking will access 
+the target of the link.

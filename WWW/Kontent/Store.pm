@@ -101,6 +101,10 @@ Creates a child page of the given name and returns a draft of its first
 revision.  Page classes will typically use this method to resolve a page, but 
 may override it to implement a bridge or simply set a default page class.
 
+=item C<pool>($module)
+
+Returns a pool in the current store with the module name $module.
+
 =back 4
 
 =cut
@@ -113,6 +117,7 @@ class WWW::Kontent::SavedPage is WWW::Kontent::Page {
 	
 	method default_resolve(String $name) returns WWW::Kontent::Page { ... }
 	method default_create(String $name) returns WWW::Kontent::Draft { ... }
+	method pool(Str $module) returns WWW::Kontent::Pool { ... }
 }
 
 =head2 WWW::Kontent::DraftPage
@@ -181,6 +186,11 @@ content; it should return a L<WWW::Kontent::Skeleton> object containing content
 appropriate for the current mode.  A WWW::Kontent::Request object must be 
 passed in to this method.
 
+=item C<modelist>
+
+Calls the page class's modelist method.  The modelist method should return an 
+array containing all the modes supported by the class.
+
 =back 4
 
 =cut
@@ -191,7 +201,7 @@ class WWW::Kontent::Revision {
 		return if defined $._revclass;
 
 		my $class = %WWW::Kontent::classes{$_.attributes<kontent:class>};
-		WWW::Kontent::error("[500] Unknown class $_.attributes<kontent:class>")
+		WWW::Kontent::error("Unknown class {$_.attributes<kontent:class>}")
 			unless $class;
 		$._revclass = $class.new(:revision($_))
 	}
@@ -202,8 +212,24 @@ class WWW::Kontent::Revision {
 	
 	#Page class methods
 	# XXX handles, and eventually role composition
-	method driver(Request $r)  returns Void                   { ._fill_revclass(); $._revclass.driver_($r)     }	
-	method adapter(Request $r) returns WWW::Kontent::Skeleton { ._fill_revclass(); $._revclass.adapter_($r)    }
+	method driver(Request $r) returns Void {
+		$r.trigger_magic('pre', 'driver', $_);
+		._fill_revclass();
+		$._revclass.driver_($r);
+		$r.trigger_magic('post', 'driver', $_);
+	}	
+	method adapter(Request $r) returns WWW::Kontent::Skeleton {
+		$r.trigger_magic('pre', 'adapter', $_);
+		._fill_revclass();
+		my $ret=$._revclass.adapter_($r);
+		return $r.trigger_magic('post', 'adapter', $_, $ret);
+	}
+	method modelist(Request $r) returns Array of Str {
+		$r.trigger_magic('pre', 'modelist', $_);
+		._fill_revclass();
+		my $ret=$._revclass.modelist_($r);
+		return *$r.trigger_magic('post', 'modelist', $_, $ret);
+	}
 }
 
 =head2 WWW::Kontent::SavedRevision
@@ -235,6 +261,10 @@ C<default_create> method.  This method takes a page name and returns a
 DraftPage object for it.  The DraftPage's revision must be committed before it 
 will appear in the backing store.
 
+=item C<pool>($module)
+
+Returns a pool in the current store with the module name $module.
+
 =back 4
 
 =cut
@@ -246,8 +276,10 @@ class WWW::Kontent::SavedRevision is WWW::Kontent::Revision {
 	# XXX pugsbug
 	# I really have no idea why this needs an underscore, but otherwise it 
 	#  just calls back into itself.
+	# XXX see if magic can be added
 	method resolve(String $name) returns WWW::Kontent::Page { ._fill_revclass(); $._revclass.resolve_($name) }
 	method create(String $name) returns WWW::Kontent::Draft { ._fill_revclass(); $._revclass.create_($name)  }
+	method pool(Str $module) returns WWW::Kontent::Pool { ... }
 }
 
 =head2 WWW::Kontent::DraftRevision
@@ -271,6 +303,26 @@ backing store.
 class WWW::Kontent::DraftRevision is WWW::Kontent::Revision {
     submethod BUILD(Int $revno)  { ... }
 	method commit() returns Void { ... }
+}
+
+=head2 WWW::Kontent::Pool
+
+This class represents a pool of unversioned data tied to a particular store.
+Store authors should inherit from this class.
+
+=cut
+
+class WWW::Kontent::Store::Pool {
+	method module()                                 returns  Str {...}	
+	submethod BUILD($.module                      )              {...}
+	method read(  Str $key                        ) returns  Str {...}
+	method add(   Str $key, Str $value, Num ?$time) returns Void {...}
+	method modify(Str $key, Str $value, Num ?$time) returns Void {...}
+	method write( Str $key, Str $value, Num ?$time) returns Void {...}
+	method delete(Str $key                        ) returns Void {...}
+	method list()                           returns Array of Str {...}
+	method when(  Str $key                        ) returns  Num {...}
+	method touch(  Str $key,            Num ?$time) returns Void {...}
 }
 
 =head1 SEE ALSO

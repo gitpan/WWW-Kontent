@@ -1,0 +1,57 @@
+Formatting:
+    **bold**									**(<styling> ?? )? <text>**
+    //italic//									//(<styling> ?? )? <text>//
+    __cite__									__(<styling> ?? )? <text>__
+    ==strike==									==(<styling> ?? )? <text>==
+    ``code``									``<plain>``
+    ""unformatted""								""<plain>""
+
+ Hyperlink: [[http://www.google.com||Link]]		[[ ( <styling> ?? )? <addr> ( || <text>  )? ]]
+Transclude: {{image/foo.gif||caption}}			{{ ( <styling> ?? )? <addr> ( || <param> )* }}
+ Bi-relate: <<Category:films>>					<< <addr> >>
+
+\\  null sequence (used to break up tokens)
+$$ident  variable
+||  parameter separator
+??  styling separator
+
+Line styles (at the beginning of a line):
+    > blockquote								> ( <styling> ?? )? <textline>*
+    * bullet									* ( <styling> ?? )? <textline>*
+    # number									# ( <styling> ?? )? <textline>*
+    ; term										; ( <styling> ?? )? <textline>*
+    : definition								: ( <styling> ?? )? <textline>*
+    ` code										` <plainline>*
+    ? paragraph styling							? <styling>
+    ! table header								! ( <styling> ?? )? <textline>*
+    | table cell								| ( <styling> ?? )? <textline>*
+    - table row									- <styling>?
+
+Headings:
+    = 1
+    == 2
+    === 3
+    ==== 4
+
+Special characters:
+    &+   &amp;
+    &--  &mdash;
+    &-   &ndash;
+    &|   \
+    &^   <br />
+    &``  &lquot;
+    &''  &rquot;
+    &`   &lsquo;
+    &'   &rsquo;
+    &<<  &laquo;
+    &>>  &raquo;
+    &<-  &larr;
+    &->  &rarr;
+
+Styling is a space-separated list of alphanumeric keywords.  In HTML, these 
+might map to a CSS class; other languages could have other mappings.  Built-in 
+styles include:
+* left
+* right
+* center
+* framed

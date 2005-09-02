@@ -1,0 +1,9 @@
+pagename: "/help/securing_pages_with_fidelius"
+attributes: 
+    kiki:content: "Access control in Kontent is provided through a Magic module called Fidelius.  (For more on Magic, see [[Concretes]].)  Fidelius is capable of restricting which users can access which modes of which pages, and can even control access to modes of child pages.\n\nCurrently, there is no web-visible interface to Fidelius; the attributes can only be added by using the [[k_manip||``k_manip``]] command-line tool.  For example, the following command could be used to change the administrative user allowed to manage the [[/kontent]] section of the site:\n\n` ./k_manip revise /kontent fidelius:self=\"create(users/j_random -any) default(any)\" fidelius:child=\"create(users/j_random -any) edit(users/j_random -any) default(any)\"\n\nThe exact meaning of the attributes is described in the documentation for the ``WWW::Kontent::Magic::Fidelius`` module, which can be accessed via the ``perldoc`` command-line tool."
+    kiki:type: "text/x-kolophon"
+    kontent:class: "kiki"
+    kontent:title: "Securing pages with Fidelius"
+    kontent:version: "1"
+    rev:author: "/users/contributors"
+    rev:log: "Initial page creation during import."

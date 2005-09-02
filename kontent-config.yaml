@@ -21,10 +21,15 @@ config-version: 1
 ################################################################################
 modules:
     - Store::NarrowDBI
+    - Class::Kode
     - Class::Kiki
     - Class::Kategory
+    - Class::User
     - Renderer::HTML
     - Renderer::XML
+    - Parser::Unparsed
+    - Parser::Kolophon
+    - Magic::Fidelius
 
 ### STORE CONFIGURATION ########################################################
 # Give the details needed to connect to your Kontent store here.  The "module" #

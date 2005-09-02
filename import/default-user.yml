@@ -1,0 +1,10 @@
+pagename: "/kontent/settings/default_user"
+attributes: 
+    kontent:class: "setting"
+    kontent:title: "default_user"
+    kontent:version: "1"
+    rev:author: "/users/contributors"
+    rev:log: "Initial page creation during import."
+    setting:desc: "The default user is used when the user's session does not indicate anouther user should be used.  Defaults to ``/users/anonymous``.  This must always be set to //something// that looks like a user, but it doesn't necessarily need to be a normal user under the ``/users`` page; it can simply be a User page tucked away somewhere in your Kontent heirarchy."
+    setting:desctype: "text/x-kolophon"
+    setting:value: "/users/anonymous"

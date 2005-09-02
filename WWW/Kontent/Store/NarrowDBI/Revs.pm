@@ -1,3 +1,16 @@
+=head1 NAME
+
+WWW::Kontent::Store::NarrowDBI::Revs - no user servicable parts inside
+
+=head1 DESCRIPTION
+
+This module contains the SavedRevision and DraftRevision implementations for 
+NarrowDBI; see L<WWW::Kontent::Store::NarrowDBI> for details on NarrowDBI's 
+behavior.
+
+=cut
+
+
 class WWW::Kontent::Store::NarrowDBI::SavedRev is WWW::Kontent::SavedRevision {
 	has $.page;
 	has $.revno;
@@ -25,7 +38,7 @@ class WWW::Kontent::Store::NarrowDBI::SavedRev is WWW::Kontent::SavedRevision {
 	
 	method revise($revno) {
 		# Make the draft object
-		my $draft=WWW::Kontent::Store::NarrowDBI::DraftRev.new(:revno($revno), :page($.page), :sth(%:sth));
+		my $draft=WWW::Kontent::Store::NarrowDBI::DraftRev.new(:revno($revno), :page($.page), :sth(\%:sth));
 		
 		# Copy all but the rev: keys.
 		for %.attributes.kv -> $k, $v {
@@ -34,6 +47,10 @@ class WWW::Kontent::Store::NarrowDBI::SavedRev is WWW::Kontent::SavedRevision {
 		}
 		
 		return $draft;
+	}
+	
+	method pool($module) {
+		return WWW::Kontent::Store::NarrowDBI::Pool.new(:module($module), :sth(\%:sth));
 	}
 }
 
@@ -97,8 +114,8 @@ class WWW::Kontent::Store::NarrowDBI::DraftRev is WWW::Kontent::DraftRevision {
 		# - In a properly configured, non-transactional table, it will keep the 
 		#   same revision from being committed twice--even concurrently.
 		# - It will assign a revision ID, which we need for the second step.
-		$:sth<addrevid>.execute($.page._id, $.revno) or WWW::Kontent::error("Failure while adding new page: $DBI::errstr");
-		$:sth<getrevid>.execute($.page._id, $.revno) or WWW::Kontent::error("Unable to retrieve new revision ID: $DBI::errstr");
+		$:sth<addrevid>.execute($.page._id, $.revno) or WWW::Kontent::error("Failure while adding new page: %:sth<dbh>.errstr()");
+		$:sth<getrevid>.execute($.page._id, $.revno) or WWW::Kontent::error("Unable to retrieve new revision ID: %:sth<dbh>.errstr()");
 		my $r=$:sth<getrevid>.fetchrow_arrayref;
 		$:id = $r[0];
 	}
@@ -106,7 +123,7 @@ class WWW::Kontent::Store::NarrowDBI::DraftRev is WWW::Kontent::DraftRevision {
 	method :write_attributes() {
 		#The second step is to commit all of the attributes.
 		for %.attributes.kv -> $k, $v {
-			%:sth<addrevattr>.execute($.id, $k, $v) or WWW::Kontent::error("Can't add attribute '$k' to attrs table");
+			%:sth<addrevattr>.execute($.id, $k, $v) or WWW::Kontent::error("Can't add attribute '$k' to attrs table: %:sth<dbh>.errstr()");
 		}
 	}
 	
@@ -118,5 +135,9 @@ class WWW::Kontent::Store::NarrowDBI::DraftRev is WWW::Kontent::DraftRevision {
 	method :uncommit() {
 		# XXX INVENT THIS
 		WWW::Kontent::error("PANIC: uncommit unimplemented ($!)");
+	}
+	
+	method pool($module) {
+		return WWW::Kontent::Store::NarrowDBI::Pool.new(:module($module), :sth(\%:sth));
 	}
 }

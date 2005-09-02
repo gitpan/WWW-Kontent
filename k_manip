@@ -6,10 +6,11 @@ k_manip - Kontent command-line page hierarchy manipulation tool
 
 =head1 SYNOPSIS
 
-	./k_manip show /path/to[14]/page
+	./k_manip dump /path/to[14]/page
+	./k_manip skeleton /path/to/page
 	./k_manip list /path/to/page
-	./k_manip revise /path/to/page rev:log='log message' rev:author=/users/someone class:attr=value
 	./k_manip create /path/to page rev:log='log message' rev:author=/users/someone class:attr=value
+	./k_manip revise /path/to/page rev:log='log message' rev:author=/users/someone class:attr=value
 
 =head1 DESCRIPTION
 
@@ -27,15 +28,20 @@ my($op, $path, @args)=*@ARGS;
 use WWW::Kontent;
 my $root = WWW::Kontent::get_root();
 
-my $request  = WWW::Kontent::Request.new(:root($root), :path($path), :parameters({}));
-my $revision = $request.path.resolve($root);
+my $request  = WWW::Kontent::Request.new(:root($root), :path($path), :parameters({}), :loaduser(0));
+my $revision = $request.pagepath.resolve($root, $request);
 my $page     = $request.page;
 
 given $op {
-	when 'show' {
+	when 'dump' {
 		say "Revision $revision.revno() of $path:";
 		say sprintf '    %-16s %s', "$_:", $revision.attributes(){$_}
 			for $revision.attributes.keys;
+	}
+	when 'skeleton' {
+		$revision.driver($request);
+		my $skel=$revision.adapter($request);
+		say for $skel.dump();
 	}
 	when 'list' {
 		say "Children of $path:";
